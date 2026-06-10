@@ -7,7 +7,7 @@ const router = express.Router()
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { username, email, password } = req.body
+  const { username, email, password, favourite_team } = req.body
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'username, email and password are required' })
@@ -17,12 +17,23 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 6 characters' })
   }
 
+  // favourite_team must be explicitly included: null (neutral) or a non-empty string (team name)
+  if (!('favourite_team' in req.body)) {
+    return res.status(400).json({ error: 'favourite_team is required — provide a team name or null for neutral' })
+  }
+
+  const team = favourite_team === null ? null : (typeof favourite_team === 'string' ? favourite_team.trim() : null)
+
+  if (favourite_team !== null && !team) {
+    return res.status(400).json({ error: 'favourite_team must be a valid team name or null for neutral' })
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const result = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
-      [username, email, hashedPassword]
+      'INSERT INTO users (username, email, password, favourite_team) VALUES ($1, $2, $3, $4) RETURNING id, username, email, favourite_team, created_at',
+      [username, email, hashedPassword, team]
     )
 
     const user = result.rows[0]
@@ -50,7 +61,7 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email])
+    const result = await pool.query('SELECT id, username, email, favourite_team, created_at, password FROM users WHERE email = $1', [email])
     const user = result.rows[0]
 
     if (!user) return res.status(401).json({ error: 'Invalid credentials' })

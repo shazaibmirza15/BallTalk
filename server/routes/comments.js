@@ -21,4 +21,34 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 })
 
+// POST /api/comments/:id/like — toggle like on a comment (protected)
+router.post('/:id/like', authenticateToken, async (req, res) => {
+  const commentId = req.params.id
+  const userId = req.user.id
+
+  try {
+    const existing = await pool.query(
+      'SELECT id FROM comment_likes WHERE comment_id = $1 AND user_id = $2',
+      [commentId, userId]
+    )
+
+    if (existing.rows.length > 0) {
+      await pool.query(
+        'DELETE FROM comment_likes WHERE comment_id = $1 AND user_id = $2',
+        [commentId, userId]
+      )
+      return res.json({ liked: false })
+    }
+
+    await pool.query(
+      'INSERT INTO comment_likes (comment_id, user_id) VALUES ($1, $2)',
+      [commentId, userId]
+    )
+    res.json({ liked: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 module.exports = router

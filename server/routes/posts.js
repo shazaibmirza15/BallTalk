@@ -108,14 +108,17 @@ router.post('/:id/like', authenticateToken, async (req, res) => {
   }
 })
 
-// GET /api/posts/:id/comments — get comments on a post
+// GET /api/posts/:id/comments — get comments on a post (with like counts)
 router.get('/:id/comments', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT c.id, c.content, c.created_at, u.username
+      `SELECT c.id, c.content, c.created_at, u.username,
+              COUNT(cl.id)::int AS like_count
        FROM comments c
        JOIN users u ON u.id = c.user_id
+       LEFT JOIN comment_likes cl ON cl.comment_id = c.id
        WHERE c.post_id = $1
+       GROUP BY c.id, u.username
        ORDER BY c.created_at ASC`,
       [req.params.id]
     )

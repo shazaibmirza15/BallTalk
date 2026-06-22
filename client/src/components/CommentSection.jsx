@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 
-export default function CommentSection({ postId }) {
+export default function CommentSection({ postId, onCommentAdded }) {
   const { user } = useAuth()
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,6 +39,8 @@ export default function CommentSection({ postId }) {
       setComments(prev => [...prev, newComment])
       setLikeState(prev => ({ ...prev, [data.id]: { liked: false, count: 0 } }))
       setContent('')
+      onCommentAdded?.()
+
     } catch (err) {
       console.error(err)
     } finally {

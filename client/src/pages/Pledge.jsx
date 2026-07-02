@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import CLUBS_CONFIG from '../constants/clubs'
 
 export default function Pledge() {
   const { register } = useAuth()
@@ -19,6 +20,7 @@ export default function Pledge() {
   }
 
   const expected = `I LOVE ${selectedTeam.toUpperCase()}`
+  const clubColors = CLUBS_CONFIG[selectedTeam] ?? { primary: '#0f172a', secondary: '#1e293b', text: '#ffffff' }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -38,7 +40,7 @@ export default function Pledge() {
       })
       navigate('/')
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed')
+      setError(err.response?.data?.error || err.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
@@ -51,11 +53,14 @@ export default function Pledge() {
   }
 
   return (
-    <div className="pledge-page">
+    <div
+      className="pledge-page"
+      style={{ background: `linear-gradient(135deg, ${clubColors.primary} 0%, color-mix(in srgb, ${clubColors.primary} 60%, black) 100%)` }}
+    >
       <section className="pledge-card">
         <p className="pledge-eyebrow">You selected</p>
         <h1 className="pledge-club">{selectedTeam}</h1>
-        <p className="pledge-instruction">
+        <p className="pledge-instruction" style={{ color: clubColors.secondary }}>
           Prove your loyalty. Type the following exactly:
         </p>
         <p className="pledge-expected">{expected}</p>
@@ -64,7 +69,7 @@ export default function Pledge() {
           <input
             className="pledge-input"
             type="text"
-            placeholder={expected}
+            placeholder=""
             value={pledge}
             onChange={e => setPledge(e.target.value)}
             autoComplete="off"

@@ -39,8 +39,6 @@ export default function Search() {
 
   return (
     <section className="page">
-      <h2>Search</h2>
-
       <form className="search-form" onSubmit={handleSearch}>
         <input
           type="text"

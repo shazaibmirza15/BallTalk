@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import CLUBS from '../constants/clubs'
+import CLUBS_CONFIG, { CLUBS } from '../constants/clubs'
 
 export default function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Restore state if returning from the Pledge page
   const restored = location.state || {}
 
   const [form, setForm] = useState({
@@ -19,6 +18,7 @@ export default function Register() {
   })
   const [teamChoice, setTeamChoice] = useState(restored.teamChoice || 'neutral')
   const [selectedTeam, setSelectedTeam] = useState(restored.selectedTeam || '')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -37,13 +37,9 @@ export default function Register() {
       return setError('Please select your favourite team')
     }
 
-    // Neutral users register directly; team supporters go to the Pledge page
     if (teamChoice === 'pick') {
       return navigate('/pledge', {
-        state: {
-          formData: { ...form },
-          selectedTeam,
-        },
+        state: { formData: { ...form }, selectedTeam },
       })
     }
 
@@ -66,8 +62,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <section className="auth-card">
-        <h1>BallTalk</h1>
-        <h2>Create Account</h2>
+        <h1 className="auth-brand">BallTalk</h1>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label>Username
@@ -83,27 +78,57 @@ export default function Register() {
             <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required />
           </label>
 
-          <fieldset className="team-fieldset">
-            <legend>Do you support a team?</legend>
-            <label className="radio-label">
-              <input type="radio" value="neutral" checked={teamChoice === 'neutral'}
-                onChange={() => setTeamChoice('neutral')} />
-              I'm Neutral
-            </label>
-            <label className="radio-label">
-              <input type="radio" value="pick" checked={teamChoice === 'pick'}
-                onChange={() => setTeamChoice('pick')} />
-              Pick my team
-            </label>
-            {teamChoice === 'pick' && (
-              <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} required>
-                <option value="">-- Select a team --</option>
-                {CLUBS.map(club => (
-                  <option key={club} value={club}>{club}</option>
-                ))}
-              </select>
-            )}
-          </fieldset>
+          <div className="team-choice">
+            <span className="team-choice-label">Do you support a team?</span>
+            <div className="radio-row">
+              <label className="radio-label">
+                <input type="radio" value="neutral" checked={teamChoice === 'neutral'}
+                  onChange={() => setTeamChoice('neutral')} />
+                I'm Neutral
+              </label>
+              <label className="radio-label">
+                <input type="radio" value="pick" checked={teamChoice === 'pick'}
+                  onChange={() => setTeamChoice('pick')} />
+                Pick my team
+              </label>
+            </div>
+          </div>
+
+          {teamChoice === 'pick' && (
+            <div className="club-select">
+              {dropdownOpen && (
+                <div className="club-select-backdrop" onClick={() => setDropdownOpen(false)} />
+              )}
+              <button
+                type="button"
+                className="club-select-trigger"
+                onClick={() => setDropdownOpen(o => !o)}
+              >
+                {selectedTeam
+                  ? <span style={{ color: CLUBS_CONFIG[selectedTeam]?.primary }}>{selectedTeam}</span>
+                  : '-- Select a team --'
+                }
+                <span className="club-select-arrow">{dropdownOpen ? '▲' : '▼'}</span>
+              </button>
+              {dropdownOpen && (
+                <ul className="club-select-list">
+                  {CLUBS.map(club => {
+                    const c = CLUBS_CONFIG[club]
+                    return (
+                      <li
+                        key={club}
+                        className="club-select-option"
+                        style={{ background: c.primary, color: c.text, borderLeft: `4px solid ${c.secondary}` }}
+                        onClick={() => { setSelectedTeam(club); setDropdownOpen(false) }}
+                      >
+                        {club}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
 
           <button type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Register'}

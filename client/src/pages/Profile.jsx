@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 import PostCard from '../components/PostCard'
+import CLUBS_CONFIG from '../constants/clubs'
 
 export default function Profile() {
   const { user } = useAuth()
@@ -26,11 +27,19 @@ export default function Profile() {
     setPosts(prev => prev.filter(p => p.id !== id))
   }
 
+  const club = user.favourite_team ? CLUBS_CONFIG[user.favourite_team] : null
+
   return (
     <section className="page">
-      <h2>Profile</h2>
-
-      <section className="profile-card">
+      <section
+        className="profile-card"
+        style={club ? {
+          background: club.primary,
+          color: club.secondary,
+          borderColor: club.secondary,
+        } : undefined}
+      >
+        <p className="profile-card-label">Account information</p>
         <p><strong>Username:</strong> @{user.username}</p>
         <p><strong>Email:</strong> {user.email}</p>
         <p>

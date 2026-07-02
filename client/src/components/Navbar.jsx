@@ -25,7 +25,7 @@ export default function Navbar() {
             </ul>
           </nav>
           <div className="nav-user">
-            <span className="nav-username">@{user.username}</span>
+            <span className="nav-username"><span className="nav-at">@</span>{user.username}</span>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           </div>
         </>

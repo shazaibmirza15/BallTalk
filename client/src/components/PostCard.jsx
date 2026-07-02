@@ -2,6 +2,7 @@ import { useState } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 import CommentSection from './CommentSection'
+import CLUBS_CONFIG from '../constants/clubs'
 
 export default function PostCard({ post, onDelete }) {
   const { user } = useAuth()
@@ -40,7 +41,7 @@ export default function PostCard({ post, onDelete }) {
 
   return (
     <article
-      className={`post-card ${expanded ? 'expanded' : ''}`}
+      className={`post-card ${expanded ? 'expanded' : ''} ${isOwner ? 'own-post' : ''}`}
       onClick={() => setExpanded(prev => !prev)}
       style={{ cursor: 'pointer' }}
     >
@@ -50,7 +51,17 @@ export default function PostCard({ post, onDelete }) {
           ? <span className="badge team-badge">{post.favourite_team} fan</span>
           : <span className="badge neutral-badge">Neutral</span>
         }
-        {post.club && <span className="badge club-badge">{post.club}</span>}
+        {post.club && (() => {
+          const c = CLUBS_CONFIG[post.club]
+          return (
+            <span
+              className="badge club-badge"
+              style={c ? { background: c.primary, color: c.text, border: `1px solid ${c.secondary}` } : undefined}
+            >
+              {post.club}
+            </span>
+          )
+        })()}
         <time className="post-time" dateTime={post.created_at}>
           {new Date(post.created_at).toLocaleDateString()}
         </time>

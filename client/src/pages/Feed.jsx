@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 import PostCard from '../components/PostCard'
+import CLUBS_CONFIG from '../constants/clubs'
 
 export default function Feed() {
   const { user } = useAuth()
@@ -33,12 +34,20 @@ export default function Feed() {
 
   const feedLabel = user.favourite_team
     ? `${user.favourite_team} posts`
-    : 'Neutral posts (no club tag)'
+    : 'Neutral posts'
+
+  const club = user.favourite_team ? CLUBS_CONFIG[user.favourite_team] : null
 
   return (
     <section className="page">
-      <h2>Your Feed</h2>
-      <p className="feed-label">{feedLabel}</p>
+      <p
+        className="feed-label"
+        style={club ? {
+          color: club.primary,
+          background: club.secondary,
+          border: `1px solid ${club.primary}`,
+        } : undefined}
+      >{feedLabel}</p>
 
       {loading ? <p>Loading...</p> : (
         posts.length === 0

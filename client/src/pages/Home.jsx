@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 import PostCard from '../components/PostCard'
-import CLUBS from '../constants/clubs'
+import { CLUBS } from '../constants/clubs'
 
 export default function Home() {
+  const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [content, setContent] = useState('')
   const [club, setClub] = useState('')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
+  const [sort, setSort] = useState('recent')
 
   async function fetchPosts() {
     try {
@@ -45,11 +48,16 @@ export default function Home() {
     setPosts(prev => prev.filter(p => p.id !== id))
   }
 
+  const sorted = [...posts].sort((a, b) =>
+    sort === 'recent'
+      ? new Date(b.created_at) - new Date(a.created_at)
+      : b.like_count - a.like_count
+  )
+
   return (
     <section className="page">
-      <h2>Home</h2>
-
       <form className="post-form" onSubmit={handlePost}>
+        <p className="post-form-label">Wanna spread some ball knowledge, {user.username}?</p>
         <textarea
           placeholder="What's on your mind?"
           value={content}
@@ -69,11 +77,20 @@ export default function Home() {
         {error && <p className="error">{error}</p>}
       </form>
 
+      <div className="tab-bar">
+        <button className={sort === 'recent' ? 'tab active' : 'tab'} onClick={() => setSort('recent')}>
+          Most Recent
+        </button>
+        <button className={sort === 'liked' ? 'tab active' : 'tab'} onClick={() => setSort('liked')}>
+          Most Liked
+        </button>
+      </div>
+
       {loading ? <p>Loading...</p> : (
-        posts.length === 0
+        sorted.length === 0
           ? <p className="empty">No posts yet. Be the first!</p>
           : <ul className="post-list">
-              {posts.map(post => (
+              {sorted.map(post => (
                 <li key={post.id}>
                   <PostCard post={post} onDelete={handleDelete} />
                 </li>

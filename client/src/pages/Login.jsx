@@ -30,8 +30,7 @@ export default function Login() {
   return (
     <div className="auth-page">
       <section className="auth-card">
-        <h1>BallTalk</h1>
-        <h2>Login</h2>
+        <h1 className="auth-brand">BallTalk</h1>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label>Email

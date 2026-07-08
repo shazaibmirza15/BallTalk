@@ -33,11 +33,11 @@ router.get('/', async (req, res) => {
   }
 })
 
-// GET /api/posts/club/:club — posts filtered by club
+// GET /api/posts/club/:club — posts tagged with club OR posted by supporters of that club
 router.get('/club/:club', async (req, res) => {
   try {
     const result = await pool.query(
-      `${POST_SELECT} WHERE p.club = $1 GROUP BY p.id, u.username, u.favourite_team ORDER BY p.created_at DESC`,
+      `${POST_SELECT} WHERE p.club = $1 OR u.favourite_team = $1 GROUP BY p.id, u.username, u.favourite_team ORDER BY p.created_at DESC`,
       [req.params.club]
     )
     res.json(result.rows)

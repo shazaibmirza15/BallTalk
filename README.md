@@ -1,5 +1,8 @@
 # BallTalk
 
+🌐 Live site: https://ball-talk-three.vercel.app
+🔧 API: https://balltalk-devq.onrender.com
+
 A football social app where fans can post, comment, and interact with content tied to their favourite Premier League club. Users declare a team allegiance on registration (or choose to be neutral) and get a personalised feed based on that choice.
 
 ---
